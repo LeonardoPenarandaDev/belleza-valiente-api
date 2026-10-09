@@ -5,6 +5,8 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\Rol;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,7 +19,7 @@ use Laravel\Sanctum\HasApiTokens;
 // 'rol' no es asignable en masa: lo fija el registro o el administrador, nunca la petición.
 #[Fillable(['name', 'email', 'telefono', 'password', 'terminos_aceptados_at'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
@@ -32,6 +34,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'terminos_aceptados_at' => 'datetime',
+            'eliminada_at' => 'datetime',
             'password' => 'hashed',
             'rol' => Rol::class,
         ];
@@ -61,5 +64,16 @@ class User extends Authenticatable
     public function esAdmin(): bool
     {
         return $this->rol === Rol::Admin;
+    }
+
+    public function estaEliminada(): bool
+    {
+        return $this->eliminada_at !== null;
+    }
+
+    /** Solo el admin entra al panel de Filament. */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->esAdmin() && ! $this->estaEliminada();
     }
 }
