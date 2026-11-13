@@ -9,11 +9,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-// Estado, pago, comisión y fechas de cambio no son asignables en masa:
-// solo se modifican desde la lógica de cambios de estado en el servidor.
 #[Fillable([
     'cliente_id', 'profesional_id', 'servicio_id', 'zona_id',
     'fecha_hora', 'duracion_minutos', 'precio', 'direccion', 'notas',
+    'estado', 'motivo_rechazo', 'cancelada_por', 'metodo_pago', 'valor_pagado', 'comision',
+    'aceptada_at', 'completada_at', 'cancelada_at',
 ])]
 class Reserva extends Model
 {
