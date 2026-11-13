@@ -10,9 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-// 'verificada' y los campos de calificación no son asignables en masa:
-// los cambia solo el administrador o el sistema.
-#[Fillable(['user_id', 'bio', 'anios_experiencia'])]
+#[Fillable(['user_id', 'bio', 'anios_experiencia', 'activa', 'verificada'])]
 class Profesional extends Model
 {
     protected $table = 'profesionales';
@@ -21,6 +19,7 @@ class Profesional extends Model
     {
         return [
             'verificada' => 'boolean',
+            'activa' => 'boolean',
             'calificacion_promedio' => 'decimal:2',
         ];
     }
@@ -61,6 +60,12 @@ class Profesional extends Model
     protected function verificadas(Builder $query): void
     {
         $query->where('verificada', true);
+    }
+
+    #[Scope]
+    protected function activas(Builder $query): void
+    {
+        $query->where('verificada', true)->where('activa', true);
     }
 
     /** Recalcula el promedio a partir de las calificaciones guardadas. */

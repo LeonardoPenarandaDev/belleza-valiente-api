@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\Rol;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -14,24 +13,28 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-// 'rol' no es asignable en masa: lo fija el registro o el administrador, nunca la petición.
-#[Fillable(['name', 'email', 'telefono', 'password', 'terminos_aceptados_at'])]
+#[Fillable(['name', 'email', 'telefono', 'foto_perfil', 'password', 'terminos_aceptados_at', 'eliminada_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    public function getFotoPerfilUrlAttribute(): ?string
+    {
+        if (!$this->foto_perfil) {
+            return null;
+        }
+        return str_starts_with($this->foto_perfil, 'http')
+            ? $this->foto_perfil
+            : asset('storage/' . $this->foto_perfil);
+    }
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'terminos_aceptados_at' => 'datetime',
+            'eliminada_at' => 'datetime',
             'password' => 'hashed',
             'rol' => Rol::class,
         ];
@@ -61,5 +64,10 @@ class User extends Authenticatable
     public function esAdmin(): bool
     {
         return $this->rol === Rol::Admin;
+    }
+
+    public function estaEliminada(): bool
+    {
+        return $this->eliminada_at !== null;
     }
 }
